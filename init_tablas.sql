@@ -11,25 +11,9 @@ CREATE TABLE Cliente(
 	
 );
 
-CREATE TABLE Reserva(
-	id_reserva INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-	cant_personas INT,
-	nro_documento_cliente VARCHAR(40),
-	tipo_documento_cliente VARCHAR(20),
-	id_servicio INT,
-	folio INT,
-	fecha_inicio DATE,
-	fecha_fin DATE,
-
-
-	FOREIGN KEY (nro_documento_cliente, tipo_documento_cliente) REFERENCES Cliente(nro_documento, tipo_documento), 
-	FOREIGN KEY (folio) REFERENCES Factura(folio),
-	FOREIGN KEY (id_servicio) REFERENCES Servicio(id_servicio) 
-);
-
 CREATE TABLE Factura(
 	folio INT PRIMARY KEY,
-	valor INT,
+	valor INT CHECK (valor >= 0),
 	fecha DATE,
 	estado VARCHAR(10),
 
@@ -44,6 +28,24 @@ CREATE TABLE Servicio(
 
 	CONSTRAINT servicios_disponibles CHECK(tipo_servicio IN ('QUINCHO', 'TINAJA', 'HOSPEDAJE'))
 );
+
+
+CREATE TABLE Reserva(
+	id_reserva INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+	cant_personas INT CHECK (cant_personas >= 1),
+	nro_documento_cliente VARCHAR(40),
+	tipo_documento_cliente VARCHAR(20),
+	id_servicio INT,
+	folio INT,
+	fecha_inicio DATE,
+	fecha_fin DATE,
+
+
+	FOREIGN KEY (nro_documento_cliente, tipo_documento_cliente) REFERENCES Cliente(nro_documento, tipo_documento), 
+	FOREIGN KEY (folio) REFERENCES Factura(folio),
+	FOREIGN KEY (id_servicio) REFERENCES Servicio(id_servicio) 
+);
+
 
 CREATE TABLE IF NOT EXISTS Hospedaje(
 	id_servicio INT PRIMARY KEY,
@@ -94,7 +96,7 @@ CREATE TABLE IF NOT EXISTS LimpiezaServicio(
 	tipo_documento VARCHAR(20),
 	id_servicio INT,
 
-	PRIMARY KEY (nro_documento, tipo_documento id_servicio),
+	PRIMARY KEY (nro_documento, tipo_documento, id_servicio),
 
   FOREIGN KEY (nro_documento, tipo_documento) REFERENCES PersonalLimpieza(nro_documento, tipo_documento),
 	FOREIGN KEY (id_servicio) REFERENCES Servicio(id_servicio)
@@ -106,7 +108,7 @@ CREATE TABLE IF NOT EXISTS Parametros(
   valor_lodge_tinaja INTEGER CHECK (valor_lodge_tinaja > 0),
   valor_cabana INTEGER CHECK (valor_cabana > 0),
   valor_tinaja INTEGER CHECK (valor_tinaja > 0),
-  valro_quincho INTEGER CHECK (valor_quincho > 0)
+  valor_quincho INTEGER CHECK (valor_quincho > 0)
 );
 
 CREATE TABLE IF NOT EXISTS Contacto(
@@ -119,7 +121,8 @@ CREATE TABLE IF NOT EXISTS Contacto(
 CREATE TABLE IF NOT EXISTS PersonalAdministrativo(
   nro_documento VARCHAR(40),
   tipo_documento VARCHAR(20),
-
+  PRIMARY KEY (nro_documento, tipo_documento), 
+	
   FOREIGN KEY (nro_documento, tipo_documento) REFERENCES Empleado(nro_documento, tipo_documento)
 );
 
@@ -133,5 +136,5 @@ CREATE TABLE IF NOT EXISTS AdministrativoContacto(
   FOREIGN KEY (id_contacto) REFERENCES Contacto(id_contacto),
   FOREIGN KEY (nro_doc_empleado, tipo_doc_empleado) REFERENCES PersonalAdministrativo(nro_documento, tipo_documento),
 
-  CONSTRAINT tipo_de_documento_valido CHECK (tipo_documento IN ('Cédula Chilena', 'Documento Mercosur', 'Pasaporte'))
+  CONSTRAINT tipo_de_documento_valido CHECK (tipo_doc_empleado IN ('Cédula Chilena', 'Documento Mercosur', 'Pasaporte'))
 );
