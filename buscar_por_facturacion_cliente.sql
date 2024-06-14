@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION ObtenerSecuencia(nro_documento VARCHAR(40), tipo_documento VARCHAR(20))
+CREATE OR REPLACE FUNCTION ServiciosUsados(nro_documento VARCHAR(40), tipo_documento VARCHAR(20))
 RETURNS TABLE (folio INT, valor INT, nombre VARCHAR(100)) AS $$
 BEGIN
     RETURN QUERY 
@@ -11,6 +11,6 @@ END;
 $$ LANGUAGE plpgsql;
 
 
-SELECT * FROM ObtenerSecuencia('12345678', 'Cédula Chilena');
+SELECT * FROM ServiciosUsados('12345678', 'Cédula Chilena');
 
 

@@ -22,3 +22,8 @@ BEFORE INSERT OR UPDATE ON reserva
 FOR EACH ROW
 EXECUTE PROCEDURE verificar_reserva();
 
+
+SELECT * 
+FROM reserva
+INNER JOIN servicio on reserva.id_servicio = servicio.id_servicio
+WHERE fecha_inicio = '12-2-2024';
