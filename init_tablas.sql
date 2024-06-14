@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS Empleado(
     telefono VARCHAR(25),
     sueldo INT,
 
-    PRIMARY KEY(nro_documento, tipo_documento)
+    PRIMARY KEY(nro_documento, tipo_documento),
     CONSTRAINT tipo_de_documento_valido CHECK (tipo_documento IN ('Cédula Chilena', 'Documento Mercosur', 'Pasaporte'))
 );
 
@@ -101,7 +101,7 @@ CREATE TABLE IF NOT EXISTS LimpiezaServicio(
     FOREIGN KEY (id_servicio) REFERENCES Servicio(id_servicio)
 );
 
-CREATE TABLE IF NOT EXISTS Parametros(
+CREATE TABLE IF NOT EXISTS Parametro(
      temporada VARCHAR(20) PRIMARY KEY,
      valor_lodge INTEGER CHECK (valor_lodge > 0),
      valor_lodge_tinaja INTEGER CHECK (valor_lodge_tinaja > 0),
@@ -133,5 +133,5 @@ CREATE TABLE IF NOT EXISTS AdministrativoContacto(
      PRIMARY KEY (id_contacto, nro_doc_empleado, tipo_doc_empleado),
 
      FOREIGN KEY (id_contacto) REFERENCES Contacto(id_contacto),
-     FOREIGN KEY (nro_doc_empleado, tipo_doc_empleado) REFERENCES PersonalAdministrativo(nro_documento, tipo_documento),
+     FOREIGN KEY (nro_doc_empleado, tipo_doc_empleado) REFERENCES PersonalAdministrativo(nro_documento, tipo_documento)
 );
