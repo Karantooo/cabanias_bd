@@ -5,7 +5,8 @@ BEGIN
 	IF (
 		SELECT COUNT(*)
 		FROM reserva
-		WHERE (NEW.fecha_inicio >= reserva.fecha_inicio) AND (NEW.fecha_fin <= reserva.fecha_fin)
+		WHERE (NEW.fecha_inicio >= reserva.fecha_inicio) AND 
+		(NEW.fecha_fin <= reserva.fecha_fin) AND (NEW.id_servicio = reserva.id_servicio) 
 	) != 0
 	THEN
 		RAISE EXCEPTION 'Ya hay una reserva entre esas fechas';
