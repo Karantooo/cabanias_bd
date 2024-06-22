@@ -1,3 +1,5 @@
+#!/bin/env python
+
 import os
 import psycopg2
 from dotenv import load_dotenv
@@ -6,7 +8,7 @@ load_dotenv()
 
 conn = psycopg2.connect(
     host="localhost",
-    database="cabanas",
+    database=os.environ['DB_NAME'],
     user=os.environ['DB_USERNAME'],
     password=os.environ['DB_PASSWORD']
 )
@@ -94,8 +96,10 @@ cur.execute('CREATE TABLE IF NOT EXISTS LimpiezaServicio(nro_documento VARCHAR(4
     'FOREIGN KEY (id_servicio) REFERENCES Servicio(id_servicio));'
 )
 
-cur.execute('CREATE TABLE IF NOT EXISTS Parametro('
+cur.execute('CREATE TABLE IF NOT EXISTS Temporada('
     'temporada VARCHAR(20) PRIMARY KEY,'
+    'fecha_inicio DATE,'
+    'fecha_fin DATE,'
     'valor_lodge INTEGER CHECK (valor_lodge > 0),'
     'valor_lodge_tinaja INTEGER CHECK (valor_lodge_tinaja > 0),'
     'valor_cabana INTEGER CHECK (valor_cabana > 0),'
@@ -135,17 +139,6 @@ cur.execute("""
             """)
 
 cur.execute("""
-            CREATE OR REPLACE FUNCTION sueldo_empleado(nro_documento_func VARCHAR(40), tipo_documento_func VARCHAR(20))
-            RETURNS TABLE (sueldo INT) AS $$
-            BEGIN
-                RETURN QUERY 
-                SELECT empleado.sueldo FROM empleado
-            	WHERE (empleado.nro_documento = nro_documento_func) AND (empleado.tipo_documento = tipo_documento_func);
-            END;
-            $$ LANGUAGE plpgsql;
-            """)
-
-cur.execute("""
             CREATE OR REPLACE FUNCTION verificar_reserva()
             RETURNS TRIGGER AS $$
             BEGIN
@@ -175,35 +168,83 @@ cur.execute("""
             """)
 
 cur.execute("""
-            CREATE OR REPLACE FUNCTION servicio_limpieza_empleado(nro_empleado VARCHAR(40), tipo_documento_empleado VARCHAR(20))
-            RETURNS TABLE (nombre VARCHAR(50), nro_empleado_RET VARCHAR(40), tipo_doc_empleado_RET VARCHAR(20)) AS $$
-            BEGIN
-                RETURN QUERY 
-            	SELECT servicio.nombre, empleado.nro_documento, empleado.tipo_documento
-            	FROM limpiezaservicio
-            	INNER JOIN empleado 
-            	ON (empleado.nro_documento = limpiezaservicio.nro_documento) AND (empleado.tipo_documento = limpiezaservicio.tipo_documento)
-            	INNER JOIN servicio
-            	ON servicio.id_servicio = limpiezaservicio.id_servicio
-            	WHERE (empleado.nro_documento = nro_empleado) AND (empleado.tipo_documento = tipo_documento_empleado);
-            END;
-            $$ LANGUAGE plpgsql;
+            CREATE OR REPLACE VIEW valorServicio AS
+            SELECT temp.temporada, s.id_servicio, temp.valor_cabana as valor FROM Cabana s CROSS JOIN Temporada temp
+            UNION ALL SELECT temp.temporada, s.id_servicio, temp.valor_lodge as valor FROM Lodge s CROSS JOIN Temporada temp WHERE s.con_tinaja = 'SIN'
+            UNION ALL SELECT temp.temporada, s.id_servicio, temp.valor_lodge_tinaja as valor FROM Lodge s CROSS JOIN Temporada temp WHERE s.con_tinaja = 'CON'
+            UNION ALL SELECT temp.temporada, s.id_servicio, temp.valor_tinaja as valor FROM Servicio s CROSS JOIN Temporada temp WHERE s.tipo_servicio = 'TINAJA'
+            UNION ALL SELECT temp.temporada, s.id_servicio, temp.valor_quincho as valor FROM Servicio s CROSS JOIN Temporada temp WHERE s.tipo_servicio = 'QUINCHO';
             """)
 
 cur.execute("""
-            CREATE OR REPLACE FUNCTION ingresos_mes(mes DATE)
-            RETURNS NUMERIC AS $$
-            DECLARE
-                suma NUMERIC;
+            CREATE OR REPLACE FUNCTION actualizar_factura()
+            RETURNS TRIGGER AS $$
             BEGIN
-                SELECT SUM(valor) INTO suma
-                FROM factura
-                WHERE EXTRACT(YEAR FROM mes) = EXTRACT(YEAR FROM factura.fecha)
-                AND EXTRACT(MONTH FROM mes) = EXTRACT(MONTH FROM factura.fecha);
-
-                RETURN suma;
-            END;
+                IF NEW.folio IS NULL
+                THEN
+                    WITH folio AS (
+                        WITH temp AS (
+                            SELECT * FROM valorServicio
+                            WHERE temporada = (SELECT temporada FROM Temporada WHERE fecha_inicio < NEW.fecha_inicio AND fecha_fin > NEW.fecha_inicio)
+                            AND id_servicio = NEW.id_servicio
+                        )
+                        INSERT INTO Factura(valor, fecha, estado)
+                        SELECT t.valor, NEW.fecha_fin, 'NO PAGADO'
+                        FROM temp as t
+                        RETURNING folio
+                    ) SELECT * INTO NEW.folio FROM folio;
+                ELSE
+                    WITH temp AS (
+                        SELECT * FROM valorServicio
+                        WHERE temporada = (SELECT temporada FROM Temporada WHERE fecha_inicio < NEW.fecha_inicio AND fecha_fin > NEW.fecha_inicio)
+                        AND id_servicio = NEW.id_servicio
+                    )
+                    UPDATE Factura f SET valor = f.valor + t.valor
+                    FROM temp as t
+                    WHERE folio = NEW.folio;
+                END IF;
+            
+                RETURN NEW;
+            END
             $$ LANGUAGE plpgsql;
+
+            CREATE OR REPLACE TRIGGER actualizar_factura
+            BEFORE INSERT ON Reserva
+            FOR EACH ROW
+            EXECUTE PROCEDURE actualizar_factura();
+            """)
+
+cur.execute("""
+            CREATE OR REPLACE VIEW sueldo AS
+                SELECT nombre, nro_documento, tipo_documento, sueldo
+                FROM Empleado;
+            """)
+
+cur.execute("""
+            CREATE OR REPLACE VIEW servicioLimpiezaEmpleado AS
+            SELECT s.id_servicio as id_servicio,
+                s.nombre as nombre_servicio,
+                e.nombre as nombre_empleado,
+                e.nro_documento as nro_documento,
+                e.tipo_documento as tipo_documento
+            FROM LimpiezaServicio ls
+            INNER JOIN Empleado e USING (nro_documento, tipo_documento)
+            INNER JOIN Servicio s USING (id_servicio);
+            """)
+
+cur.execute("""
+            CREATE OR REPLACE VIEW preciosTemporada AS
+            SELECT * FROM Temporada
+                WHERE fecha_inicio < NOW()
+                AND fecha_fin > NOW();
+            """)
+
+cur.execute("""
+            CREATE OR REPLACE VIEW ingresos AS
+            SELECT EXTRACT(YEAR FROM f.fecha) as ano,
+                EXTRACT(MONTH FROM f.fecha) as mes,
+                SUM(f.valor) as monto
+            FROM factura f GROUP BY ano, mes;
             """)
 
 cur.execute("""
@@ -219,6 +260,7 @@ cur.execute("""
             $$ LANGUAGE plpgsql;
             """)
 
+#TODO: Pasar a una view
 cur.execute("""
             CREATE OR REPLACE FUNCTION servicios_usados(nro_documento VARCHAR(40), tipo_documento VARCHAR(20))
             RETURNS TABLE (folio INT, valor INT, nombre VARCHAR(100)) AS $$
@@ -233,6 +275,13 @@ cur.execute("""
             $$ LANGUAGE plpgsql;
             """)
 
+cur.execute("""
+            INSERT INTO Temporada(temporada, fecha_inicio, fecha_fin, valor_lodge,
+                valor_lodge_tinaja, valor_cabana, valor_tinaja, valor_quincho)
+            VALUES
+                ('Otoño 2024', '2024-03-15', '2024-06-30', 45000, 60000, 75000, 40000, 60000),
+                ('Invierno 2024', '2024-06-30', '2024-08-15', 65000, 80000, 140000, 40000, 60000);
+            """)
 
 cur.execute("""
             INSERT INTO Servicio (id_servicio, nombre, capacidad, tipo_servicio)
@@ -272,6 +321,15 @@ cur.execute("""
             """)
 
 cur.execute("""
+            INSERT INTO Cabana (id_servicio, cant_habitaciones)
+            VALUES
+            	(101, 2),
+                (102, 2),
+                (103, 2),
+                (104, 2);
+            """)
+
+cur.execute("""
             INSERT INTO Lodge (id_servicio, con_tinaja)
             VALUES
             	(201, 'SIN'),
@@ -298,21 +356,18 @@ cur.execute("""
             """)
 
 cur.execute("""
-            INSERT INTO Factura (valor, fecha, estado)
+            INSERT INTO Reserva (cant_personas, nro_documento_cliente, tipo_documento_cliente, id_servicio, fecha_inicio, fecha_fin)
             VALUES
-            	(50000, '2024-05-18', 'PAGADO'),
-            	(75000, '2024-05-13', 'PAGADO'),
-            	(100000, '2024-05-13', 'NO PAGADO');
+                (2, 'B7654321', 'Pasaporte', 207, '2024-05-12', '2024-05-18'),
+                (4, '33445566', 'Cédula Chilena', 104, '2024-05-10', '2024-05-13'),
+                (5, '12345678', 'Cédula Chilena', 102, '2024-05-10', '2024-05-13');
+            ;
             """)
 
 cur.execute("""
             INSERT INTO Reserva (cant_personas, nro_documento_cliente, tipo_documento_cliente, id_servicio, folio, fecha_inicio, fecha_fin)
             VALUES
-                (2, 'B7654321', 'Pasaporte', 207, 1, '2024-05-12', '2024-05-18'),
-                (4, '33445566', 'Cédula Chilena', 104, 2, '2024-05-10', '2024-05-13'),
-                (5, '12345678', 'Cédula Chilena', 102, 3, '2024-05-10', '2024-05-13'),
                 (5, '12345678', 'Cédula Chilena', 800, 3, '2024-05-10', '2024-05-10');
-            ;
             """)
 
 cur.execute("""
