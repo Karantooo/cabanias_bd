@@ -1,6 +1,6 @@
 // script.js
 document.addEventListener('DOMContentLoaded', function() {
-    const consultasSelect = document.getElementById('tipo-hospedaje');
+    const consultasSelect = document.getElementById('selectorHospedaje');
     const conditionalMenuItem = document.getElementById('nombre_cabaña');
 
     consultasSelect.addEventListener('change', function() {

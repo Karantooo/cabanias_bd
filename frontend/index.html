@@ -19,27 +19,29 @@
     <section id="hospedaje">
         <h2>Formulario de Hospedaje</h2>
         <form action="#" method="post">
+
+            
+            
             <div class="form-group">
-                <label for="tipo-hospedaje">Tipo de Hospedaje:</label>
-                <select name="tipo-hospedaje" id="tipo-hospedaje">
-                    <option value="Refugio del Bosque">Refugio del Bosque</option>
-                    <option value="Refugio del Sol">Refugio del Sol</option>
-                    <option value="Refugio del Agua">Refugio del Agua</option>
-                    <option value="Refugio de la Tierra">Refugio de la Tierra</option>
-
-                </select>
-            </div>
-
-            <div class="form-group" id="nombre_cabaña">
                 <label for="nombre_hospedaje">Nombre cabaña:</label>
                 
-                <select name="nombre_cabaña" >
+                <select name="nombre_cabaña" id="selectorHospedaje">
                     <option value="cabaña">Cabaña</option>
                     <option value="tinaja">Tinaja</option>
                     <option value="quincho">Quincho</option>
                 </select>
             </div>
+            <div class="form-group" id="nombre_cabaña">
+                <label for="tipo-hospedaje">Tipo de Hospedaje:</label>
+                <select name="tipo-hospedaje">
+                    <option value="1">Refugio del Bosque</option>
+                    <option value="2">Refugio del Sol</option>
+                    <option value="3">Refugio del Agua</option>
+                    <option value="4">Refugio de la Tierra</option>
+    
+                </select>
 
+            </div>
             <div class="form-group">
                 <label for="cantidad-personas">Cantidad de Personas:</label>
                 <input type="number" id="cantidad-personas" name="cantidad-personas" min="1" max="10" required>
