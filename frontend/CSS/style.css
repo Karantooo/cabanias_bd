@@ -37,6 +37,64 @@ body {
     border-radius: 4px;
 }
 
-#hospedaje{
-    background-color: aqua;
+.contenedor-formularios {
+    display: flex;
+    flex-direction: column; /* Cambio para alinear los formularios verticalmente */
+    align-items: center; /* Centra los formularios horizontalmente */
+    gap: 20px; /* Espacio entre los formularios */
+    padding: 20px; /* Espacio entre los bordes de los formularios y los laterales de la pantalla */
+}
+
+section {
+    width: 50%;
+    min-width: 300px; /* Establece un ancho mínimo para cada sección */
+    margin: 20px;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f0f8ff;
+}
+
+h2 {
+    color: #333;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+label {
+    font-weight: bold;
+}
+
+input[type="number"],
+input[type="date"],
+input[type="text"],
+select {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+button[type="submit"] {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button[type="submit"]:hover {
+    background-color: #0056b3;
 }
