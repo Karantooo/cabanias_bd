@@ -59,7 +59,25 @@
     </section>
 
     <section id="servicios">
-
+        <h2>Formulario Servicios</h2>
+        <form id="servicio-form" action="#" method="post">
+            <div class="form-group">
+                <label for="reserva-asociada">Reserva Asociada:</label>
+                <input type="text" id="reserva-asociada" name="reserva-asociada" required>
+            </div>
+            <div class="form-group">
+                <label for="servicio">Servicio:</label>
+                <select name="servicio" id="servicio">
+                    <option value="tinaja">Tinaja</option>
+                    <option value="quincho">Quincho</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="fecha-hora">Fecha y Hora:</label>
+                <input type="datetime-local" id="fecha-hora" name="fecha-hora" required>
+            </div>
+            <button type="submit">Enviar</button>
+        </form>
     </section>
 
     <section id="consultas">
