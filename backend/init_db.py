@@ -176,6 +176,7 @@ cur.execute("""
             UNION ALL SELECT temp.temporada, s.id_servicio, temp.valor_quincho as valor FROM Servicio s CROSS JOIN Temporada temp WHERE s.tipo_servicio = 'QUINCHO';
             """)
 
+# TODO: Multiplicar precio por cantidad de noches
 cur.execute("""
             CREATE OR REPLACE FUNCTION actualizar_factura()
             RETURNS TRIGGER AS $$

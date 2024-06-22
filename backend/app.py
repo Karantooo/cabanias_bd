@@ -43,6 +43,8 @@ def cliente_post():
             400,
         )
 
+    tipo_doc = mapa_doc[tipo_doc]
+
     conn = get_db_connection()
     cur = conn.cursor()
     try:
@@ -116,14 +118,17 @@ def nueva_reserva():
     else:
         cur.execute(
             "INSERT INTO Reserva (cant_personas, nro_documento_cliente, tipo_documento_cliente, id_servicio, fecha_inicio, fecha_fin)"
-            "VALUES (%s, %s, %s, %s, %s, %s, %s)",
+            "VALUES (%s, %s, %s, %s, %s, %s)"
+            "RETURNING folio",
             (cant_personas, nro_doc, tipo_doc, id_servicio, fecha_inicio, fecha_fin),
         )
+
+        folio = cur.fetchone()[0]
 
     conn.commit()
     cur.close()
     conn.close()
-    return "Se registró una nueva reserva"
+    return f"Se registró una nueva reserva con folio {folio}"
 
 
 @app.get("/limpieza")
@@ -165,7 +170,7 @@ def sueldo_empleado():
                 """,
         (nro_doc, tipo_doc),
     )
-    sueldo = cur.fetchall()[0][0]
+    sueldo = cur.fetchone()[0]
     app.logger.debug(sueldo)
 
     cur.close()
@@ -189,9 +194,76 @@ def ingresos_mes():
         "SELECT monto FROM ingresos WHERE ano = %s AND mes = %s;",
         (fecha.year, fecha.month),
     )
-    sueldo = cur.fetchall()[0][0]
+    sueldo = cur.fetchone()[0]
     app.logger.debug(sueldo)
 
     cur.close()
     conn.close()
     return str(sueldo)
+
+
+@app.get("/temporada")
+def temporada_get():
+    fecha = request.args.get("fecha")
+    if fecha is None:
+        fecha = date.today()
+        app.logger.debug(fecha)
+    else:
+        fecha = date.fromisoformat(fecha)
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+                SELECT * FROM Temporada
+                WHERE fecha_inicio < %s AND fecha_fin > %s;
+                """,
+        (fecha, fecha),
+    )
+
+    datos_temporada = cur.fetchall()
+
+    return datos_temporada
+
+
+@app.post("/temporada")
+def temporada_post():
+    try:
+        temporada = request.form["temporada"]
+        fecha_inicio = date.fromisoformat(request.form["fecha_inicio"])
+        fecha_fin = date.fromisoformat(request.form["fecha_fin"])
+        lodge = request.form["lodge"]
+        lodge_tinaja = request.form["lodge_tinaja"]
+        cabana = request.form["cabana"]
+        tinaja = request.form["tinaja"]
+        quincho = request.form["quincho"]
+    except KeyError:
+        app.logger.debug(request.form.keys())
+        return (
+            "<alert>No se pudo registrar el cliente, los datos ingresados son incorrectos.</alert>",
+            400,
+        )
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        "INSERT INTO Temporada (temporada, fecha_inicio, fecha_fin, valor_lodge, valor_lodge_tinaja, valor_cabana, valor_tinaja, valor_quincho)"
+        "VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
+        (
+            temporada,
+            fecha_inicio,
+            fecha_fin,
+            lodge,
+            lodge_tinaja,
+            cabana,
+            tinaja,
+            quincho,
+        ),
+    )
+
+    conn.commit()
+    cur.close()
+    conn.close()
+    return f"Se crearon los datos para la temporada {temporada}"
