@@ -105,3 +105,8 @@ button[type="submit"]:hover {
 #hospedaje{
     padding-top: 40px;
 }
+.resultado_consulta{
+    background-color: #dcdcdc5a;
+    border-radius: 10px;
+    text-align: center;
+}
