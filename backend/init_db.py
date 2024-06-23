@@ -176,11 +176,18 @@ cur.execute("""
             UNION ALL SELECT temp.temporada, s.id_servicio, temp.valor_quincho as valor FROM Servicio s CROSS JOIN Temporada temp WHERE s.tipo_servicio = 'QUINCHO';
             """)
 
-# TODO: Multiplicar precio por cantidad de noches
 cur.execute("""
             CREATE OR REPLACE FUNCTION actualizar_factura()
             RETURNS TRIGGER AS $$
+            DECLARE
+                diff_fechas INT;
             BEGIN
+                diff_fechas := NEW.fecha_fin - NEW.fecha_inicio;
+                IF diff_fechas = 0
+                THEN
+                    diff_fechas := 1;
+                END IF;
+
                 IF NEW.folio IS NULL
                 THEN
                     WITH folio AS (
@@ -190,7 +197,7 @@ cur.execute("""
                             AND id_servicio = NEW.id_servicio
                         )
                         INSERT INTO Factura(valor, fecha, estado)
-                        SELECT t.valor, NEW.fecha_fin, 'NO PAGADO'
+                        SELECT t.valor * diff_fechas, NEW.fecha_fin, 'NO PAGADO'
                         FROM temp as t
                         RETURNING folio
                     ) SELECT * INTO NEW.folio FROM folio;
@@ -261,19 +268,13 @@ cur.execute("""
             $$ LANGUAGE plpgsql;
             """)
 
-#TODO: Pasar a una view
 cur.execute("""
-            CREATE OR REPLACE FUNCTION servicios_usados(nro_documento VARCHAR(40), tipo_documento VARCHAR(20))
-            RETURNS TABLE (folio INT, valor INT, nombre VARCHAR(100)) AS $$
-            BEGIN
-                RETURN QUERY 
-                SELECT Factura.folio, Factura.valor ,servicio.nombre
-            	FROM Reserva INNER JOIN Factura
-            	ON Reserva.folio = Factura.folio
-            	INNER JOIN servicio ON servicio.id_servicio = reserva.id_servicio
-            	WHERE (Reserva.nro_documento_cliente = nro_documento) AND (Reserva.tipo_documento_cliente = tipo_documento);
-            END;
-            $$ LANGUAGE plpgsql;
+            CREATE OR REPLACE VIEW serviciosCliente AS
+            SELECT r.folio, vs.valor, r.nro_documento_cliente as nro_documento, r.tipo_documento_cliente as tipo_documento, s.nombre as servicio
+            FROM Reserva r INNER JOIN servicio s USING (id_servicio)
+            INNER JOIN valorServicio vs USING (id_servicio)
+            WHERE vs.temporada = (SELECT temporada FROM Temporada t WHERE t.fecha_inicio < r.fecha_inicio AND t.fecha_fin > r.fecha_inicio)
+            ORDER BY folio;
             """)
 
 cur.execute("""
@@ -369,6 +370,13 @@ cur.execute("""
             INSERT INTO Reserva (cant_personas, nro_documento_cliente, tipo_documento_cliente, id_servicio, folio, fecha_inicio, fecha_fin)
             VALUES
                 (5, '12345678', 'Cédula Chilena', 800, 3, '2024-05-10', '2024-05-10');
+            """)
+
+cur.execute("""
+            INSERT INTO Reserva (cant_personas, nro_documento_cliente, tipo_documento_cliente, id_servicio, fecha_inicio, fecha_fin)
+            VALUES
+                (4, '12345678', 'Cédula Chilena', 102, '2024-07-10', '2024-07-13');
+            ;
             """)
 
 cur.execute("""

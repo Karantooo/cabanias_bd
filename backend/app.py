@@ -72,7 +72,7 @@ def cliente_get():
 
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("SELECT servicios_usados(%s, %s)", (nro_doc, tipo_doc))
+    cur.execute("SELECT * FROM serviciosCliente WHERE nro_documento = %s AND tipo_documento = %s", (nro_doc, tipo_doc))
     servicios = cur.fetchall()
     cur.close()
     conn.close()
