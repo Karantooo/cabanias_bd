@@ -4,6 +4,7 @@ import psycopg2
 import os
 from dotenv import load_dotenv
 
+import json
 from datetime import date
 
 app = Flask(__name__)
@@ -72,11 +73,33 @@ def cliente_get():
 
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("SELECT * FROM serviciosCliente WHERE nro_documento = %s AND tipo_documento = %s", (nro_doc, tipo_doc))
-    servicios = cur.fetchall()
+    cur.execute(
+        """
+SELECT row_to_json(t)
+FROM (
+  SELECT nro_documento, tipo_documento,
+    (
+      SELECT array_to_json(array_agg(row_to_json(r)))
+      FROM (
+        SELECT folio, valor, servicio
+        FROM serviciosCliente
+        WHERE nro_documento = c.nro_documento AND tipo_documento = c.tipo_documento
+        ORDER BY folio
+      ) r
+    ) as reservas
+  FROM Cliente c
+  WHERE nro_documento = %s AND tipo_documento = %s
+) t
+        """,
+        (nro_doc, tipo_doc),
+    )
+
+    servicios = cur.fetchone()
+    ret_servicios = json.dumps(servicios[0])
+
     cur.close()
     conn.close()
-    return servicios
+    return ret_servicios
 
 
 @app.post("/reserva")
@@ -103,8 +126,10 @@ def nueva_reserva():
 
     if folio is not None:
         cur.execute(
-            "INSERT INTO Reserva (cant_personas, nro_documento_cliente, tipo_documento_cliente, id_servicio, folio, fecha_inicio, fecha_fin)"
-            "VALUES (%s, %s, %s, %s, %s, %s, %s)",
+            """
+INSERT INTO Reserva (cant_personas, nro_documento_cliente, tipo_documento_cliente, id_servicio, folio, fecha_inicio, fecha_fin)
+VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """,
             (
                 cant_personas,
                 nro_doc,
@@ -117,9 +142,11 @@ def nueva_reserva():
         )
     else:
         cur.execute(
-            "INSERT INTO Reserva (cant_personas, nro_documento_cliente, tipo_documento_cliente, id_servicio, fecha_inicio, fecha_fin)"
-            "VALUES (%s, %s, %s, %s, %s, %s)"
-            "RETURNING folio",
+            """
+INSERT INTO Reserva (cant_personas, nro_documento_cliente, tipo_documento_cliente, id_servicio, fecha_inicio, fecha_fin)
+VALUES (%s, %s, %s, %s, %s, %s)
+RETURNING folio
+            """,
             (cant_personas, nro_doc, tipo_doc, id_servicio, fecha_inicio, fecha_fin),
         )
 
@@ -128,7 +155,7 @@ def nueva_reserva():
     conn.commit()
     cur.close()
     conn.close()
-    return f"Se registró una nueva reserva con folio {folio}"
+    return f"<altert>Se registró una nueva reserva con folio {folio}</alert>"
 
 
 @app.get("/limpieza")
@@ -142,15 +169,30 @@ def limpieza_servicio():
     cur = conn.cursor()
 
     cur.execute(
-        """SELECT id_servicio, nombre_servicio FROM servicioLimpiezaEmpleado
-                WHERE nro_documento = %s AND tipo_documento =  %s;""",
+        """
+SELECT row_to_json(t)
+FROM (
+  SELECT nombre, nro_documento, tipo_documento,
+    (
+      SELECT json_array (
+        SELECT nombre_servicio
+        FROM servicioLimpiezaEmpleado
+        WHERE nro_documento = e.nro_documento AND tipo_documento = e.tipo_documento
+      )
+    ) as servicios
+  FROM Empleado e
+  WHERE nro_documento = %s AND tipo_documento = %s
+) t
+        """,
         (nro_doc, tipo_doc),
     )
-    servicios = cur.fetchall()
+
+    servicios = cur.fetchone()
+    ret_servicios = json.dumps(servicios[0])
 
     cur.close()
     conn.close()
-    return servicios
+    return ret_servicios
 
 
 @app.get("/sueldo")
@@ -165,17 +207,18 @@ def sueldo_empleado():
 
     cur.execute(
         """
-                SELECT sueldo FROM sueldo
-                WHERE nro_documento = %s AND tipo_documento = %s;
-                """,
+SELECT row_to_json(s) FROM Sueldo s
+WHERE nro_documento = %s AND tipo_documento = %s;
+        """,
         (nro_doc, tipo_doc),
     )
-    sueldo = cur.fetchone()[0]
-    app.logger.debug(sueldo)
+
+    sueldo = cur.fetchone()
+    ret_sueldo = json.dumps(sueldo[0])
 
     cur.close()
     conn.close()
-    return str(sueldo)
+    return ret_sueldo
 
 
 @app.get("/ingresos")
@@ -194,12 +237,13 @@ def ingresos_mes():
         "SELECT monto FROM ingresos WHERE ano = %s AND mes = %s;",
         (fecha.year, fecha.month),
     )
-    sueldo = cur.fetchone()[0]
-    app.logger.debug(sueldo)
+
+    ingresos = cur.fetchone()[0]
+    ret_ingresos = json.dumps({"mes": fecha.strftime("%b %Y"), "ingresos": ingresos})
 
     cur.close()
     conn.close()
-    return str(sueldo)
+    return ret_ingresos
 
 
 @app.get("/temporada")
@@ -216,15 +260,21 @@ def temporada_get():
 
     cur.execute(
         """
-                SELECT * FROM Temporada
-                WHERE fecha_inicio < %s AND fecha_fin > %s;
-                """,
+SELECT row_to_json(t)
+FROM (
+  SELECT temporada, valor_lodge, valor_lodge_tinaja, valor_cabana, valor_tinaja, valor_quincho
+  FROM Temporada WHERE fecha_inicio < %s AND fecha_fin > %s
+) t;
+        """,
         (fecha, fecha),
     )
 
-    datos_temporada = cur.fetchall()
+    temporada = cur.fetchone()
+    ret_temporada = json.dumps(temporada[0])
 
-    return datos_temporada
+    cur.close()
+    conn.close()
+    return ret_temporada
 
 
 @app.post("/temporada")
@@ -249,8 +299,10 @@ def temporada_post():
     cur = conn.cursor()
 
     cur.execute(
-        "INSERT INTO Temporada (temporada, fecha_inicio, fecha_fin, valor_lodge, valor_lodge_tinaja, valor_cabana, valor_tinaja, valor_quincho)"
-        "VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
+        """
+INSERT INTO Temporada (temporada, fecha_inicio, fecha_fin, valor_lodge, valor_lodge_tinaja, valor_cabana, valor_tinaja, valor_quincho)
+VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        """,
         (
             temporada,
             fecha_inicio,
