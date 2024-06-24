@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cabañas</title>
+    <link rel="stylesheet" href="CSS/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <ul class="navbar-menu">
+            <li><a href="#hospedaje">Hospedaje</a></li>
+            <li><a href="#servicios">Otros servicios</a></li>
+            <li><a href="#consultas">Consultas</a></li>
+            <li><a href="#cambio_precios">Cambio precios</a></li>
+        </ul>
+    </nav>
+
+    <div class="contenedor-formularios">
+        <section id="hospedaje">
+            <h2>Formulario de Hospedaje</h2>
+            <form action="#" method="post">
+                <div class="form-group">
+                    <label for="nombre_hospedaje">Nombre cabaña:</label>
+                    
+                    <select name="nombre_cabaña" id="selectorHospedaje">
+                        <option value="cabaña">Cabaña</option>
+                        <option value="tinaja">Tinaja</option>
+                        <option value="quincho">Quincho</option>
+                    </select>
+                </div>
+                <div class="form-group" id="nombre_cabaña">
+                    <label for="tipo-hospedaje">Tipo de Hospedaje:</label>
+                    <select name="tipo-hospedaje">
+                        <option value="1">Refugio del Bosque</option>
+                        <option value="2">Refugio del Sol</option>
+                        <option value="3">Refugio del Agua</option>
+                        <option value="4">Refugio de la Tierra</option>
+        
+                    </select>
+
+                </div>
+                <div class="form-group">
+                    <label for="cantidad-personas">Cantidad de Personas:</label>
+                    <input type="number" id="cantidad-personas" name="cantidad-personas" min="1" max="10" required>
+                </div>
+                <div class="form-group">
+                    <label for="fecha-inicio">Fecha de Inicio:</label>
+                    <input type="date" id="fecha-inicio" name="fecha-inicio" required>
+                </div>
+                <div class="form-group">
+                    <label for="fecha-fin">Fecha de Fin:</label>
+                    <input type="date" id="fecha-fin" name="fecha-fin" required>
+                </div>
+                <button type="submit">Enviar</button>
+            </form>
+        </section>
+
+        <section id="servicios">
+            <h2>Formulario Servicios</h2>
+            <form id="servicio-form" action="#" method="post">
+                <div class="form-group">
+                    <label for="reserva-asociada">Reserva Asociada:</label>
+                    <input type="text" id="reserva-asociada" name="reserva-asociada" required>
+                </div>
+                <div class="form-group">
+                    <label for="servicio">Servicio:</label>
+                    <select name="servicio" id="servicio">
+                        <option value="tinaja">Tinaja</option>
+                        <option value="quincho">Quincho</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="fecha-hora">Fecha y Hora:</label>
+                    <input type="datetime-local" id="fecha-hora" name="fecha-hora" required>
+                </div>
+                <button type="submit">Enviar</button>
+            </form>
+        </section>
+
+        <section id="consultas">
+            <h2>Formulario de Consulta</h2>
+            <form action="#" method="post">
+                <div class="form-group">
+                    <label for="consultas">Consulta:</label>
+                    <select name="consultas" id="consultas">
+                        <option value="1">Empleado</option>
+                        <option value="2">Cliente</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="rut">RUT:</label>
+                    <input type="text" id="rut" name="rut" required>
+                </div>
+                <div class="form-group">
+                    <label for="tipo-documento">Tipo de Documento:</label>
+                    <select name="tipo-documento" id="tipo-documento">
+                        <option value="Cédula Chilena">Cédula Chilena</option>
+                        <option value="Documento Mercosur">Documento Mercosur</option>
+                        <option value="Pasaporte">Pasaporte</option>
+                    </select>
+                </div>
+                <div class="resultado_consulta">
+                </div>
+                <button type="submit">Enviar</button>
+            </form>
+        </section>
+
+
+        <section id="cambio_precios">
+            <h2>Formulario de Temporada</h2>
+            <form id="temporada-form" action="#" method="post">
+                <div class="form-group">
+                    <label for="temporada">Temporada:</label>
+                    <input type="text" id="temporada" name="temporada" required>
+                </div>
+                <div class="form-group">
+                    <label for="valor-cabana">Valor Cabaña:</label>
+                    <input type="number" id="valor-cabana" name="valor-cabana" required>
+                </div>
+                <div class="form-group">
+                    <label for="valor-lodge">Valor Lodge:</label>
+                    <input type="number" id="valor-lodge" name="valor-lodge" required>
+                </div>
+                <div class="form-group">
+                    <label for="valor-tinaja">Valor Tinaja:</label>
+                    <input type="number" id="valor-tinaja" name="valor-tinaja" required>
+                </div>
+                <div class="form-group">
+                    <label for="valor-quincho">Valor Quincho:</label>
+                    <input type="number" id="valor-quincho" name="valor-quincho" required>
+                </div>
+                <button type="submit">Enviar</button>
+            </form>
+        </div>
+    
+        </section>
+    </div>
+
+    <script src="./js/app.js"></script>
+</body>
+</html>

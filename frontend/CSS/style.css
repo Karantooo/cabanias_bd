@@ -1,0 +1,112 @@
+/* styles.css */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #333;
+    padding: 20px 20px;
+    position: fixed;
+    width: 100%;
+}
+
+
+
+.navbar-menu {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+}
+
+.navbar-menu li {
+    margin-left: 20px;
+}
+
+.navbar-menu a {
+    color: #fff;
+    text-decoration: none;
+    padding: 10px 15px;
+    transition: background-color 0.3s;
+}
+
+.navbar-menu a:hover {
+    background-color: #575757;
+    border-radius: 4px;
+}
+
+.contenedor-formularios {
+    display: flex;
+    flex-direction: column; /* Cambio para alinear los formularios verticalmente */
+    align-items: center; /* Centra los formularios horizontalmente */
+    gap: 20px; /* Espacio entre los formularios */
+    padding: 20px; /* Espacio entre los bordes de los formularios y los laterales de la pantalla */
+}
+
+section {
+    width: 50%;
+    min-width: 300px; /* Establece un ancho mínimo para cada sección */
+    margin: 20px;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f0f8ff;
+}
+
+h2 {
+    color: #333;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+label {
+    font-weight: bold;
+}
+
+input[type="number"],
+input[type="date"],
+input[type="text"],
+input[type="datetime-local"],
+select {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+button[type="submit"] {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button[type="submit"]:hover {
+    background-color: #0056b3;
+}
+
+#hospedaje{
+    padding-top: 40px;
+}
+.resultado_consulta{
+    background-color: #dcdcdc5a;
+    border-radius: 10px;
+    text-align: center;
+}
