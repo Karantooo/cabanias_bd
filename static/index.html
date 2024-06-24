@@ -21,24 +21,36 @@
             <h2>Formulario de Hospedaje</h2>
             <form action="#" method="post">
                 <div class="form-group">
-                    <label for="nombre_hospedaje">Nombre cabaña:</label>
-                    
-                    <select name="nombre_cabaña" id="selectorHospedaje">
-                        <option value="cabaña">Cabaña</option>
-                        <option value="tinaja">Tinaja</option>
-                        <option value="quincho">Quincho</option>
+                    <label for="selectorHospedaje">Tipo hospedaje:</label>
+                    <select id="selectorHospedaje" name="tipo_hospedaje">
+                        <option value="" selected>Seleccione una opción</option>
+                        <option value="cabana">Cabaña</option>
+                        <option value="lodge">Lodge</option>
                     </select>
                 </div>
-                <div class="form-group" id="nombre_cabaña">
-                    <label for="tipo-hospedaje">Tipo de Hospedaje:</label>
-                    <select name="tipo-hospedaje">
-                        <option value="1">Refugio del Bosque</option>
-                        <option value="2">Refugio del Sol</option>
-                        <option value="3">Refugio del Agua</option>
-                        <option value="4">Refugio de la Tierra</option>
-        
+                <div class="form-group" id="nombre_cabana">
+                    <label for="selector_cabana">Nombre cabaña:</label>
+                    <select for="selector_cabana" name="selector_cabana">
+                        <option value="" selected>Seleccione una opción</option>
+                        <option value="101">Refugio del Bosque</option>
+                        <option value="102">Refugio del Sol</option>
+                        <option value="103">Refugio del Agua</option>
+                        <option value="104">Refugio de la Tierra</option>
                     </select>
 
+                </div>
+                <div class="form-group" id="nombre_lodge">
+                    <label for="selector_lodge">Nombre lodge:</label>
+                    <select id="selector_lodge"  name="selector_lodge">
+                        <option value="" selected>Seleccione una opción</option>
+                        <option value="201">Habitación 1</option>
+                        <option value="202">Habitación 2</option>
+                        <option value="203">Habitación 3</option>
+                        <option value="204">Habitación 4</option>
+                        <option value="205">Habitación 5</option>
+                        <option value="206">Habitación 6</option>
+                        <option value="207">Habitación 7</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label for="cantidad-personas">Cantidad de Personas:</label>

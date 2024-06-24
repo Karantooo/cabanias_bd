@@ -110,3 +110,7 @@ button[type="submit"]:hover {
     border-radius: 10px;
     text-align: center;
 }
+
+#nombre_cabana, #nombre_lodge{
+    display: none
+}
