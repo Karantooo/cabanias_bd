@@ -33,6 +33,9 @@ def get_db_connection():
 def index():
     return render_template("index.html")
 
+@app.route("/registrar")
+def registrar():
+    return render_template("crear_cliente.html")
 
 @app.post("/cliente")
 def cliente_post():
@@ -118,9 +121,9 @@ def nueva_reserva():
         fecha_inicio = request.form["fecha_inicio"]
         fecha_fin = request.form["fecha_fin"]
     except KeyError:
-        app.logger.debug(request.form.keys())
+        app.logger.debug(request.form)
         return (
-            "No se pudo registrar el cliente, los datos ingresados son incorrectos.",
+            "No se pudo registrar la reserva, los datos ingresados son incorrectos.",
             400,
         )
 

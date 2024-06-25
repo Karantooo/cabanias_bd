@@ -1,4 +1,27 @@
-document.querySelector('.client-form').addEventListener('submit', function(e) {
-    e.preventDefault(); // Previene el envío del formulario
-    window.location.href = 'index.html'; // Redirige al usuario a index.html
+async function sendData(data) {
+    console.log(data);
+    try {
+        const response = await fetch(cliente_url, {
+            method: "POST",
+            body: data,
+        });
+
+        await response;
+    } catch (e) {
+        console.error(e);
+    }
+
+    console.log(data);
+    window.opener.postMessage({data_cliente: data}, '*');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const formulario = document.querySelector('.client-form');
+
+    formulario.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const form_data = new FormData(formulario);
+
+        const response = sendData(form_data);
+    });
 });
