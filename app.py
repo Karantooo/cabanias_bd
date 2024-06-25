@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, render_template, flash, url_for, redirect
 import psycopg2
 
 import os
@@ -8,6 +8,7 @@ import json
 from datetime import date
 
 app = Flask(__name__)
+app.secret_key = os.environ["SECRET_KEY"]
 
 load_dotenv()
 
@@ -28,6 +29,11 @@ def get_db_connection():
     return conn
 
 
+@app.route("/")
+def index():
+    return render_template("index.html")
+
+
 @app.post("/cliente")
 def cliente_post():
     try:
@@ -40,7 +46,7 @@ def cliente_post():
     except KeyError:
         app.logger.debug(request.form.keys())
         return (
-            "<alert>No se pudo registrar el cliente, los datos ingresados son incorrectos.</alert>",
+            "No se pudo registrar el cliente, los datos ingresados son incorrectos.",
             400,
         )
 
@@ -54,12 +60,12 @@ def cliente_post():
             (nro_doc, tipo_doc, nombre, nacionalidad, correo, telefono),
         )
     except psycopg2.errors.UniqueViolation:
-        return "<alert>El cliente ya existe</alert>", 400
+        return "El cliente ya existe", 400
     conn.commit()
     cur.close()
     conn.close()
 
-    return "<alert>Se registró con éxito al cliente.</alert>"
+    return "Se registró con éxito al cliente."
 
 
 @app.get("/cliente")
@@ -114,7 +120,7 @@ def nueva_reserva():
     except KeyError:
         app.logger.debug(request.form.keys())
         return (
-            "<alert>No se pudo registrar el cliente, los datos ingresados son incorrectos.</alert>",
+            "No se pudo registrar el cliente, los datos ingresados son incorrectos.",
             400,
         )
 
@@ -155,7 +161,7 @@ RETURNING folio
     conn.commit()
     cur.close()
     conn.close()
-    return f"<altert>Se registró una nueva reserva con folio {folio}</alert>"
+    return f"Se registró una nueva reserva con folio {folio}"
 
 
 @app.get("/limpieza")
@@ -291,7 +297,7 @@ def temporada_post():
     except KeyError:
         app.logger.debug(request.form.keys())
         return (
-            "<alert>No se pudo registrar el cliente, los datos ingresados son incorrectos.</alert>",
+            "No se pudo registrar el cliente, los datos ingresados son incorrectos.",
             400,
         )
 
@@ -318,4 +324,6 @@ VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
     conn.commit()
     cur.close()
     conn.close()
-    return f"Se crearon los datos para la temporada {temporada}"
+
+    flash(f"Se crearon los datos para la temporada {temporada}")
+    return redirect(url_for("index"))
