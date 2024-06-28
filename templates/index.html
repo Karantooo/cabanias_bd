@@ -10,6 +10,7 @@
     <script>
         const crear_cliente_url = {{ url_for('registrar')|tojson }};
         const reserva_url = {{ url_for('nueva_reserva')|tojson }};
+        const reserva_get_url = {{ url_for('reserva_get')|tojson }};
         const empleado_url = {{ url_for('sueldo_empleado')|tojson }};
         const cliente_url = {{ url_for('cliente_get')|tojson }};
 
@@ -75,21 +76,21 @@
 
         <section id="servicios">
             <h2>Formulario Servicios</h2>
-            <form id="servicio-form" action="#" method="post">
+            <form id="servicio-form">
                 <div class="form-group">
                     <label for="reserva-asociada">Reserva Asociada:</label>
-                    <input type="text" id="reserva-asociada" name="reserva-asociada" required>
+                    <input type="text" id="reserva-asociada" name="id_reserva" required>
                 </div>
                 <div class="form-group">
                     <label for="servicio">Servicio:</label>
-                    <select name="id_servicio" id="servicio">
-                        <option value="tinaja">Tinaja</option>
-                        <option value="quincho">Quincho</option>
+                    <select name="servicio" id="servicio">
+                        <option value="800">Tinaja</option>
+                        <option value="900">Quincho</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label for="fecha-hora">Fecha y Hora:</label>
-                    <input type="datetime-local" id="fecha-hora" name="fecha-hora" required>
+                    <input type="date" id="fecha-hora" name="fecha" required>
                 </div>
                 <button type="submit">Enviar</button>
             </form>
