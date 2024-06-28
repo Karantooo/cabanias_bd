@@ -54,6 +54,26 @@ async function sendData(data) {
     }
 }
 
+async function getDataEmpleado(data) {
+    try {
+        const response = await fetch(empleado_url + '?' + new URLSearchParams(data).toString())
+            .then((response) => response.json())
+        return response;
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+async function getDataCliente(data) {
+    try {
+        const response = await fetch(cliente_url + '?' + new URLSearchParams(data).toString())
+            .then((response) => response.json())
+        return response;
+    } catch (e) {
+        console.error(e);
+    }
+}
+
 
 async function openCrearCliente(form_hospedaje) {
     const params = 'scrollbars=no,resizable=no,status=no,location=no,toolbar=no,width=300,height=500';
@@ -94,4 +114,50 @@ document.addEventListener('DOMContentLoaded', function() {
         event.preventDefault();
         openCrearCliente(form_hospedaje);
     })
+});
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    
+    const form_consulta = document.getElementById('form_consulta');
+    
+    form_consulta.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const eleccion_cliente = document.getElementById('opcion_consulta');
+        console.log(eleccion_cliente.value);
+        if(eleccion_cliente.value == 1){
+            datos = new FormData(form_consulta);
+            consulta = await getDataEmpleado(datos);
+            
+        }
+        else{
+            datos = new FormData(form_consulta);
+            consulta = await getDataCliente(datos);
+        }
+        respuesta = this.getElementById('resultado_consulta');
+        respuesta.innerText = '';
+       console.log(consulta);
+        for (let clave in consulta) {
+            if (!Array.isArray(consulta[clave])) 
+              respuesta.innerText += `${clave}: ${consulta[clave]}\n`;
+            else{
+                respuesta.innerText += `${clave} : \n`;
+                reserva = consulta[clave];
+
+                reserva.forEach(function(elemento) {
+                    for (item in elemento){
+                        respuesta.innerText += `${item}: ${elemento[item]} \n`;
+                    }
+                    respuesta.innerText += '\n\n\n';
+                });
+            }
+            
+          }
+  
+        if (consulta == undefined)
+            respuesta.innerText = 'Persona no encontrada';
+    })
+
+   
 });

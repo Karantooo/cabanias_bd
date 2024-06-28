@@ -10,6 +10,9 @@
     <script>
         const crear_cliente_url = {{ url_for('registrar')|tojson }};
         const reserva_url = {{ url_for('nueva_reserva')|tojson }};
+        const empleado_url = {{ url_for('sueldo_empleado')|tojson }};
+        const cliente_url = {{ url_for('cliente_get')|tojson }};
+
     </script>
 </head>
 <body>
@@ -94,27 +97,27 @@
 
         <section id="consultas">
             <h2>Formulario de Consulta</h2>
-            <form action="#" method="post">
+            <form id="form_consulta">
                 <div class="form-group">
-                    <label for="consultas">Consulta:</label>
-                    <select name="consultas" id="consultas">
+                    <label for="opcion_consulta">Consulta:</label>
+                    <select name="opcion_consulta" id="opcion_consulta">
                         <option value="1">Empleado</option>
                         <option value="2">Cliente</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label for="rut">RUT:</label>
-                    <input type="text" id="rut" name="rut" required>
+                    <input type="text" id="nro_doc" name="nro_doc" required>
                 </div>
                 <div class="form-group">
                     <label for="tipo-documento">Tipo de Documento:</label>
-                    <select name="tipo_documento" id="tipo-documento">
+                    <select name="tipo_doc" id="tipo_doc">
                         <option value="chilena">Cédula Chilena</option>
                         <option value="mercosur">Documento Mercosur</option>
                         <option value="pasaporte">Pasaporte</option>
                     </select>
                 </div>
-                <div class="resultado_consulta">
+                <div id="resultado_consulta">
                 </div>
                 <button type="submit">Enviar</button>
             </form>
