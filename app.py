@@ -76,8 +76,6 @@ def cliente_get():
     nro_doc = request.args.get("nro_doc")
     tipo_doc = request.args.get("tipo_doc")
 
-    app.logger.debug(f"{nro_doc} | {tipo_doc}")
-
     tipo_doc = mapa_doc.get(tipo_doc)
 
     conn = get_db_connection()
@@ -166,6 +164,30 @@ RETURNING folio
     conn.close()
     return f"Se registró una nueva reserva con folio {folio}"
 
+@app.get("/reserva")
+def reserva_get():
+    id_reserva = request.args.get("id_reserva")
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute(
+        """
+SELECT row_to_json(t)
+FROM (
+  SELECT id_reserva, cant_personas, nro_documento_cliente as nro_documento, tipo_documento_cliente as tipo_documento, id_servicio, folio, fecha_inicio, fecha_fin
+  FROM Reserva WHERE id_reserva = %s
+) t;
+        """,
+        (id_reserva,),
+    )
+
+    datos_reserva = cur.fetchone()
+    datos_reserva = json.dumps(datos_reserva[0])
+
+    cur.close()
+    conn.close()
+    return datos_reserva
+
 
 @app.get("/limpieza")
 def limpieza_servicio():
@@ -235,7 +257,6 @@ def ingresos_mes():
     fecha = request.args.get("fecha")
     if fecha is None:
         fecha = date.today()
-        app.logger.debug(fecha)
     else:
         fecha = date.fromisoformat(fecha)
 
@@ -260,7 +281,6 @@ def temporada_get():
     fecha = request.args.get("fecha")
     if fecha is None:
         fecha = date.today()
-        app.logger.debug(fecha)
     else:
         fecha = date.fromisoformat(fecha)
 

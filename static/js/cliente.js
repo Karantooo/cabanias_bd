@@ -13,6 +13,8 @@ async function sendData(data) {
 
     console.log(data);
     window.opener.postMessage({data_cliente: data}, '*');
+
+    window.close();
 }
 
 document.addEventListener('DOMContentLoaded', () => {

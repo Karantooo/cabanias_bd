@@ -2,6 +2,12 @@
 
 let clienteWindow;
 
+let mapa_doc = {
+    "Cédula Chilena": "chilena",
+    "Documento Mercosur": "mercosur",
+    "Pasaporte": "pasaporte"
+};
+
 const hospedajes = {};
 hospedajes['cabana'] = [
     ["101", "Refugio del Bosque"],
@@ -41,14 +47,24 @@ const changeTipoHospedaje = () => {
     }
 }
 
-async function sendData(data) {
+async function sendData(data, url) {
     try {
-        const response = await fetch(reserva_url, {
+        const response = await fetch(url, {
             method: "POST",
             body: data,
         });
 
         return await response;
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+async function queryData(data, url) {
+    try {
+        const response = await fetch(url + '?' + new URLSearchParams(data).toString())
+            .then((response) => response.json())
+        return response;
     } catch (e) {
         console.error(e);
     }
@@ -70,16 +86,12 @@ async function openCrearCliente(form_hospedaje) {
         window.addEventListener('message', listener);
     }).then((result) => {
         const data_cliente = result;
-        console.log(data_cliente);
-        console.log(data_cliente.get("nro_doc"));
         const data_reserva = new FormData(form_hospedaje);
-        console.log(data_reserva);
 
         data_reserva.append("nro_doc", data_cliente.get("nro_doc"));
         data_reserva.append("tipo_doc", data_cliente.get("tipo_doc"));
 
-        console.log(data_reserva);
-        sendData(data_reserva);
+        sendData(data_reserva, reserva_url);
     });
 }
 
@@ -93,5 +105,22 @@ document.addEventListener('DOMContentLoaded', function() {
     form_hospedaje.addEventListener('submit', (event) => {
         event.preventDefault();
         openCrearCliente(form_hospedaje);
-    })
+    });
+
+    const form_servicio = document.querySelector('#servicio-form');
+    form_servicio.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const data = new FormData(form_servicio);
+
+        data_reserva = await queryData(data, reserva_get_url);
+
+        data.append("fecha_inicio", data.get("fecha"));
+        data.append("fecha_fin", data.get("fecha"));
+        data.append("nro_doc", data_reserva.nro_documento);
+        data.append("tipo_doc", mapa_doc[data_reserva.tipo_documento]);
+        data.append("cant_personas", data_reserva.cant_personas);
+        data.append("folio", data_reserva.folio);
+
+        sendData(data, reserva_url);
+    });
 });
